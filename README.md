@@ -89,5 +89,4 @@ This repository includes a `render.yaml` Blueprint for 1-click deployment to Ren
 ## 🔒 Security Note
 This system uses static admin credentials in the MVP build (`admin`/`admin`). Before deploying to a public-facing production environment, implement proper password hashing and a user management table.
 
----
-*Developed by Antigravity*
+
