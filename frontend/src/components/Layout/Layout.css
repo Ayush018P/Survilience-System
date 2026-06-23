@@ -34,9 +34,11 @@
 .logo-icon {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
-  border-radius: 8px;
-  box-shadow: var(--glow-blue);
+  background: var(--accent-blue);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .logo h2 {
@@ -80,7 +82,7 @@
 
 .nav-link.active {
   color: var(--text-primary);
-  background: rgba(0, 212, 255, 0.1);
+  background: rgba(59, 130, 246, 0.1);
   border-left: 3px solid var(--accent-blue);
 }
 
@@ -107,7 +109,7 @@
 
 .logout-btn:hover {
   color: var(--accent-red);
-  background: rgba(255, 71, 87, 0.1);
+  background: rgba(239, 68, 68, 0.1);
 }
 
 /* Main Wrapper */
@@ -167,9 +169,9 @@
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(0, 255, 136, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
 .user-profile {

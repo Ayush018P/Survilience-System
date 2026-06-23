@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     JWT_EXPIRE_MINUTES: int = 480  # 8 hours
 
     # === Database ===
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/neuroguard"
+    NEUROGUARD_DB_URL: str = "sqlite:///./data/neuroguard.db"
 
     # === Redis ===
     REDIS_URL: str = "redis://localhost:6379/0"

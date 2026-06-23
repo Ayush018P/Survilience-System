@@ -37,10 +37,10 @@
   justify-content: center;
 }
 
-.bg-blue { background: rgba(0, 212, 255, 0.1); color: var(--accent-blue); }
-.bg-green { background: rgba(0, 255, 136, 0.1); color: var(--accent-green); }
-.bg-red { background: rgba(255, 71, 87, 0.1); color: var(--accent-red); }
-.bg-purple { background: rgba(168, 85, 247, 0.1); color: var(--accent-purple); }
+.bg-blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+.bg-green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+.bg-red { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+.bg-purple { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
 
 .stat-value {
   font-size: 2rem;
@@ -135,7 +135,7 @@
 }
 
 .diagram-node.highlight {
-  background: rgba(168, 85, 247, 0.1);
+  background: rgba(139, 92, 246, 0.15);
   border-color: var(--accent-purple);
   color: var(--accent-purple);
 }

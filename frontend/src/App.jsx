@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SurveillanceProvider } from './context/SurveillanceContext';
 
 // Layout
 import Layout from './components/Layout/Layout';
@@ -76,7 +77,9 @@ function App() {
           },
         }}
       />
-      <AppRoutes />
+      <SurveillanceProvider>
+        <AppRoutes />
+      </SurveillanceProvider>
     </AuthProvider>
   );
 }

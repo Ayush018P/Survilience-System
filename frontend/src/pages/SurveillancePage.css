@@ -96,12 +96,12 @@
 
 .bbox.recognized {
   border-color: var(--accent-green);
-  box-shadow: 0 0 15px var(--accent-green), inset 0 0 10px rgba(0, 255, 136, 0.2);
+  box-shadow: 0 0 15px var(--accent-green), inset 0 0 10px rgba(16, 185, 129, 0.2);
 }
 
 .bbox.stranger {
   border-color: var(--accent-red);
-  box-shadow: 0 0 15px var(--accent-red), inset 0 0 10px rgba(255, 71, 87, 0.2);
+  box-shadow: 0 0 15px var(--accent-red), inset 0 0 10px rgba(239, 68, 68, 0.2);
 }
 
 .bbox-label {
@@ -192,7 +192,7 @@
 
 .detection-item.danger {
   border-left-color: var(--accent-red);
-  background: rgba(255, 71, 87, 0.05);
+  background: rgba(239, 68, 68, 0.05);
 }
 
 .detection-item .icon {
@@ -204,8 +204,8 @@
   border-radius: 50%;
 }
 
-.safe .icon { color: var(--accent-green); background: rgba(0, 255, 136, 0.1); }
-.danger .icon { color: var(--accent-red); background: rgba(255, 71, 87, 0.1); }
+.safe .icon { color: var(--accent-green); background: rgba(16, 185, 129, 0.1); }
+.danger .icon { color: var(--accent-red); background: rgba(239, 68, 68, 0.1); }
 
 .detection-item .info {
   flex: 1;

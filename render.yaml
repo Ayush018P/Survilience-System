@@ -29,7 +29,7 @@ services:
         value: admin
       - key: ADMIN_PASSWORD
         value: admin
-      - key: DATABASE_URL
+      - key: NEUROGUARD_DB_URL
         value: sqlite:////data/neuroguard.db
       # Add the frontend URL once deployed to CORS
       - key: CORS_ORIGINS

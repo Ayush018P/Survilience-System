@@ -127,5 +127,5 @@
 
 .btn-icon.danger:hover {
   color: var(--accent-red);
-  background: rgba(255, 71, 87, 0.1);
+  background: rgba(239, 68, 68, 0.1);
 }

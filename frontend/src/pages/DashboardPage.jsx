@@ -14,23 +14,28 @@ import './DashboardPage.css';
 
 const DashboardPage = () => {
   const [analytics, setAnalytics] = useState(null);
+  const [recentEvents, setRecentEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchAnalytics = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const res = await apiClient.get('/analytics');
-      setAnalytics(res.data);
+      const [analyticsRes, eventsRes] = await Promise.all([
+        apiClient.get('/analytics'),
+        apiClient.get('/events?limit=5')
+      ]);
+      setAnalytics(analyticsRes.data);
+      setRecentEvents(eventsRes.data.events || []);
     } catch (error) {
-      console.error('Failed to fetch analytics', error);
+      console.error('Failed to fetch dashboard data', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAnalytics();
+    fetchDashboardData();
     // Poll every 5 seconds for live dashboard updates
-    const interval = setInterval(fetchAnalytics, 5000);
+    const interval = setInterval(fetchDashboardData, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -88,13 +93,13 @@ const DashboardPage = () => {
 
         <div className="stat-card glass-card">
           <div className="stat-header">
-            <h3>System Health</h3>
+            <h3>System Status</h3>
             <div className="stat-icon bg-purple"><Cpu size={20} /></div>
           </div>
-          <div className="stat-value">{(system_metrics.fps || 0).toFixed(1)} FPS</div>
+          <div className="stat-value">{(recognition_accuracy || 0).toFixed(1)}% <span style={{fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)'}}>Accuracy</span></div>
           <div className="stat-footer flex-between">
-            <span className="text-muted">CPU: {system_metrics.cpu_percent || 0}%</span>
-            <span className="text-muted">RAM: {system_metrics.memory_percent || 0}%</span>
+            <span className="text-green">Face Rec: Active</span>
+            <span className="text-muted">{system_metrics.latency_ms || 0}ms Speed</span>
           </div>
         </div>
       </div>
@@ -102,54 +107,47 @@ const DashboardPage = () => {
       {/* Charts */}
       <div className="charts-grid">
         <div className="chart-card glass-card">
-          <h3>Hourly Traffic (Today)</h3>
+          <h3>Activity Overview</h3>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={hourly_traffic}>
+              <AreaChart data={hourly_traffic} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--accent-blue)" stopOpacity={0.8}/>
+                    <stop offset="5%" stopColor="var(--accent-blue)" stopOpacity={0.5}/>
                     <stop offset="95%" stopColor="var(--accent-blue)" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--glass-border)" vertical={false} />
-                <XAxis dataKey="hour" stroke="var(--text-muted)" />
-                <YAxis stroke="var(--text-muted)" />
+                <XAxis dataKey="hour" stroke="var(--text-muted)" tick={{fill: 'var(--text-muted)'}} />
+                <YAxis stroke="var(--text-muted)" tick={{fill: 'var(--text-muted)'}} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--glass-border)' }}
+                  contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--glass-border)', borderRadius: '8px' }}
                   itemStyle={{ color: 'var(--text-primary)' }}
                 />
-                <Area type="monotone" dataKey="count" name="Detections" stroke="var(--accent-blue)" fillOpacity={1} fill="url(#colorCount)" />
+                <Area type="monotone" dataKey="count" name="Activity Level" stroke="var(--accent-blue)" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="system-info-card glass-card">
-          <h3>SNN Model Status</h3>
-          <div className="model-stats">
-            <div className="model-stat-row">
-              <span className="label">Recognition Accuracy</span>
-              <span className="value text-gradient">{(recognition_accuracy || 0).toFixed(1)}%</span>
-            </div>
-            <div className="model-stat-row">
-              <span className="label">Hybrid Architecture</span>
-              <span className="value">SNN + Cosine</span>
-            </div>
-            <div className="model-stat-row">
-              <span className="label">Pipeline Latency</span>
-              <span className="value">{system_metrics.latency_ms || 0} ms</span>
-            </div>
-          </div>
-          
-          <div className="system-diagram">
-            <div className="diagram-node">Camera</div>
-            <div className="diagram-arrow">→</div>
-            <div className="diagram-node">MTCNN</div>
-            <div className="diagram-arrow">→</div>
-            <div className="diagram-node">ResNet</div>
-            <div className="diagram-arrow">→</div>
-            <div className="diagram-node highlight">SNN</div>
+        <div className="system-info-card glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
+          <h3>Recent Activity</h3>
+          <div className="recent-activity-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto' }}>
+            {recentEvents.length > 0 ? recentEvents.map((event, idx) => (
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.8rem', borderBottom: '1px solid var(--glass-border)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontWeight: 600 }}>{event.event_type === 'stranger' ? 'Stranger Detected' : event.person_name}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(event.timestamp).toLocaleTimeString()}</span>
+                </div>
+                <div>
+                  <span style={{ padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 500, background: event.event_type === 'stranger' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)', color: event.event_type === 'stranger' ? 'var(--accent-red)' : 'var(--accent-green)' }}>
+                    {event.event_type === 'stranger' ? 'Alert' : 'Recognized'}
+                  </span>
+                </div>
+              </div>
+            )) : (
+              <div className="text-muted text-center mt-4">No recent activity</div>
+            )}
           </div>
         </div>
       </div>

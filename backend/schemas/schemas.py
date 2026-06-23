@@ -266,3 +266,5 @@ class HealthResponse(BaseModel):
     redis: str = "connected"
     ai_pipeline: str = "ready"
     uptime_seconds: float = 0.0
+
+

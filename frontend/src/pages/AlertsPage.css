@@ -38,12 +38,12 @@
 }
 
 .filter-btn.active-red {
-  background: rgba(255, 71, 87, 0.15);
+  background: rgba(239, 68, 68, 0.15);
   color: var(--accent-red);
 }
 
 .filter-btn.active-green {
-  background: rgba(0, 255, 136, 0.15);
+  background: rgba(16, 185, 129, 0.15);
   color: var(--accent-green);
 }
 
@@ -77,11 +77,11 @@
 }
 
 .row-danger td {
-  background: rgba(255, 71, 87, 0.02);
+  background: rgba(239, 68, 68, 0.02);
 }
 
 .row-danger:hover td {
-  background: rgba(255, 71, 87, 0.05);
+  background: rgba(239, 68, 68, 0.05);
 }
 
 .status-badge {
@@ -95,15 +95,15 @@
 }
 
 .status-badge.stranger {
-  background: rgba(255, 71, 87, 0.1);
+  background: rgba(239, 68, 68, 0.1);
   color: var(--accent-red);
-  border: 1px solid rgba(255, 71, 87, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .status-badge.recognized {
-  background: rgba(0, 255, 136, 0.1);
+  background: rgba(16, 185, 129, 0.1);
   color: var(--accent-green);
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .confidence-bar {

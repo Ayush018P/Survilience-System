@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 def _get_db_path() -> str:
     """Extract the file path from the SQLite URL and ensure the directory exists."""
-    db_url = settings.DATABASE_URL
+    db_url = settings.NEUROGUARD_DB_URL
     if db_url.startswith("sqlite:///"):
         db_path = db_url.replace("sqlite:///", "")
         Path(db_path).parent.mkdir(parents=True, exist_ok=True)
@@ -30,7 +30,7 @@ def _get_db_path() -> str:
 
 # Configure connect_args based on dialect
 connect_args = {}
-if settings.DATABASE_URL.startswith("sqlite"):
+if settings.NEUROGUARD_DB_URL.startswith("sqlite"):
     connect_args["check_same_thread"] = False
 
 # Create engine
@@ -45,7 +45,7 @@ engine = create_engine(
 # Enable WAL mode and foreign keys for SQLite (better concurrent read performance)
 @event.listens_for(engine, "connect")
 def _set_sqlite_pragma(dbapi_connection, connection_record):
-    if settings.DATABASE_URL.startswith("sqlite"):
+    if settings.NEUROGUARD_DB_URL.startswith("sqlite"):
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL")
         cursor.execute("PRAGMA foreign_keys=ON")
@@ -59,7 +59,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 def create_tables() -> None:
     """Create all database tables. Safe to call multiple times."""
     # Ensure pgvector extension exists before creating tables if using postgres
-    if settings.DATABASE_URL.startswith("postgresql"):
+    if settings.NEUROGUARD_DB_URL.startswith("postgresql"):
         with engine.connect() as conn:
             conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
             conn.commit()
