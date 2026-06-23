@@ -1,0 +1,64 @@
+# render.yaml
+# Render.com Infrastructure as Code configuration
+
+services:
+  # Redis instance for caching, Task Queues, and Pub/Sub
+  - type: redis
+    name: neuroguard-redis
+    ipAllowList: [] # Allow internal access
+    plan: free      # Can be upgraded for production
+    maxmemoryPolicy: allkeys-lru
+
+  # FastAPI Backend Web Service
+  - type: web
+    name: neuroguard-backend
+    env: docker
+    dockerContext: .
+    dockerfilePath: ./backend/Dockerfile
+    plan: starter # ML models require more RAM, free tier might crash. Recommended: starter or standard.
+    healthCheckPath: /api/health
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: neuroguard-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        value: admin
+      - key: DATABASE_URL
+        value: sqlite:////data/neuroguard.db
+      # Add the frontend URL once deployed to CORS
+      - key: CORS_ORIGINS
+        value: https://neuroguard-frontend.onrender.com
+    # Persistent disk for SQLite, Models, and Images so data survives redeploys
+    disk:
+      name: neuroguard-data
+      mountPath: /data
+      sizeGB: 5
+
+  # React Frontend Static Site
+  - type: web
+    name: neuroguard-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    # The build context is the frontend folder
+    rootDir: frontend
+    envVars:
+      # Tell Vite to use relative paths or point to the backend URL
+      # Since we can't use Nginx proxy easily on Render static sites, 
+      # we need to ensure the React app knows the backend URL
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: neuroguard-backend
+          property: url
+    routes:
+      # SPA Routing fallback
+      - type: rewrite
+        source: /*
+        destination: /index.html

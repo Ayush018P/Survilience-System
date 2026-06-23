@@ -1,0 +1,13 @@
+__pycache__
+*.py[cod]
+venv/
+.venv/
+.git
+.gitignore
+.env
+*.md
+docs/
+node_modules/
+frontend/dist/
+.vscode/
+.idea/

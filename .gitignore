@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+
+# Database
+*.db
+data/
+
+# AI Models & Snapshots
+*.pt
+*.pth
+models/*.pt
+models/*.pth
+snapshots/
+logs/*.log
+
+# Node
+node_modules/
+frontend/dist/
+frontend/build/
+.npm
+
+# Docker
+docker/data/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Jupyter
+.ipynb_checkpoints/
