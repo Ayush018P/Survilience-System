@@ -2,10 +2,10 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSurveillance } from '../../context/SurveillanceContext';
-import { User, Video, VideoOff } from 'lucide-react';
+import { User, Video, VideoOff, Menu } from 'lucide-react';
 import './Layout.css';
 
-const Topbar = () => {
+const Topbar = ({ toggleSidebar }) => {
   const { user } = useAuth();
   const { isStreaming, toggleSurveillance } = useSurveillance();
   const location = useLocation();
@@ -18,7 +18,10 @@ const Topbar = () => {
 
   return (
     <header className="topbar glass-panel">
-      <div className="topbar-left">
+      <div className="topbar-left" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <button className="mobile-menu-btn" onClick={toggleSidebar} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', display: 'none' }}>
+          <Menu size={24} />
+        </button>
         <h1 className="page-title">{getPageTitle()}</h1>
       </div>
       

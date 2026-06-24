@@ -11,12 +11,13 @@ import {
   Settings,
   LogOut,
   ShieldAlert,
-  Bot
+  Bot,
+  X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './Layout.css';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, closeSidebar }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -39,12 +40,15 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="sidebar glass-panel">
-      <div className="sidebar-header">
+    <aside className={`sidebar glass-panel ${isOpen ? 'open' : ''}`}>
+      <div className="sidebar-header" style={{ justifyContent: 'space-between', width: '100%' }}>
         <div className="logo flex-center">
           <div className="logo-icon"></div>
           <h2>NeuroGuard <span>AI</span></h2>
         </div>
+        <button className="mobile-close-btn" onClick={closeSidebar} style={{ display: 'none', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+          <X size={24} />
+        </button>
       </div>
       
       <nav className="sidebar-nav">

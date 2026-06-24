@@ -213,3 +213,49 @@
   padding: 2rem;
   overflow-y: auto;
 }
+/* Mobile Sidebar Responsive Styles */
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: block !important;
+  }
+  .mobile-close-btn {
+    display: block !important;
+  }
+  
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    height: 100vh;
+    z-index: 100;
+    transition: left 0.3s ease;
+    background: var(--bg-dark);
+    box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 90;
+  }
+  
+  .topbar-right {
+    gap: 1rem;
+  }
+  
+  .user-info {
+    display: none;
+  }
+  
+  .surveillance-toggle span:last-child {
+    display: none;
+  }
+}
