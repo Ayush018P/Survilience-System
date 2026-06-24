@@ -8,13 +8,16 @@ RUN useradd -m -u 1000 user
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH
 
-WORKDIR $HOME/app
-
 # Install system dependencies required for OpenCV
 RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
+
+WORKDIR $HOME/app
+
+# Give the user ownership of the app directory
+RUN chown -R user:user $HOME/app
 
 # Switch to the non-root user
 USER user
