@@ -1,3 +1,11 @@
+---
+title: NeuroGuard AI
+emoji: 🛡️
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+---
 # NeuroGuard AI 🛡️
 
 **Privacy-First Offline AI Surveillance Powered by Hybrid CNN-SNN Intelligence**
