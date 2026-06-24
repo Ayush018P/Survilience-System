@@ -26,6 +26,7 @@ export const SurveillanceProvider = ({ children }) => {
   const [faces, setFaces] = useState([]);
   const [threats, setThreats] = useState([]);
   const [streamError, setStreamError] = useState(null);
+  const [lowLightMode, setLowLightMode] = useState(false);
 
   // Stop Camera
   const stopCamera = useCallback(() => {
@@ -210,7 +211,8 @@ export const SurveillanceProvider = ({ children }) => {
         isWaitingForResponse.current = true;
         wsRef.current.send(JSON.stringify({
           frame: base64Image,
-          frame_id: Date.now()
+          frame_id: Date.now(),
+          enhance_low_light: lowLightMode
         }));
       }
       
@@ -246,7 +248,9 @@ export const SurveillanceProvider = ({ children }) => {
     videoRef, // Provide ref so UI can attach
     toggleSurveillance,
     startCamera,
-    stopCamera
+    stopCamera,
+    lowLightMode,
+    setLowLightMode
   };
 
   return (

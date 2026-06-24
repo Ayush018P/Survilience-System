@@ -200,6 +200,10 @@ class SNNTrainer:
         # Set as active
         crud.set_active_model(db, model_record.id)
         
+        # Reload pipeline so the new SNN model is used immediately
+        from backend.ai.pipeline import get_pipeline
+        get_pipeline().load_active_model(db)
+        
         # Invalidate centroids cache in Redis because model changed
         # This is handled by the caller or via a background task
         

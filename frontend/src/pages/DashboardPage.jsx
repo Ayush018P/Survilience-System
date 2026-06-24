@@ -131,21 +131,48 @@ const DashboardPage = () => {
         </div>
 
         <div className="system-info-card glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
-          <h3>Recent Activity</h3>
-          <div className="recent-activity-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto' }}>
-            {recentEvents.length > 0 ? recentEvents.map((event, idx) => (
-              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.8rem', borderBottom: '1px solid var(--glass-border)' }}>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontWeight: 600 }}>{event.event_type === 'stranger' ? 'Stranger Detected' : event.person_name}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(event.timestamp).toLocaleTimeString()}</span>
-                </div>
-                <div>
-                  <span style={{ padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 500, background: event.event_type === 'stranger' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)', color: event.event_type === 'stranger' ? 'var(--accent-red)' : 'var(--accent-green)' }}>
-                    {event.event_type === 'stranger' ? 'Alert' : 'Recognized'}
-                  </span>
+          <h3>Security Timeline</h3>
+          <div className="recent-activity-list" style={{ display: 'flex', flexDirection: 'column', paddingLeft: '1rem', overflowY: 'auto' }}>
+            {recentEvents.length > 0 ? recentEvents.map((event, idx) => {
+              const isThreat = event.threat_level !== 'green' && event.threat_level !== 'yellow';
+              return (
+              <div key={idx} style={{ 
+                position: 'relative', 
+                paddingBottom: '1.5rem', 
+                paddingLeft: '1.5rem', 
+                borderLeft: idx === recentEvents.length - 1 ? 'none' : `2px solid ${isThreat ? 'var(--alert-red)' : 'var(--glass-border)'}` 
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  left: '-6px',
+                  top: '0',
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  background: isThreat ? 'var(--alert-red)' : 'var(--accent-blue)',
+                  boxShadow: isThreat ? '0 0 10px var(--alert-red)' : 'none'
+                }}></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '-4px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontWeight: 600, color: isThreat ? 'var(--alert-red)' : 'inherit' }}>
+                      {event.threat_type !== 'none' ? `Weapon Detected: ${event.threat_type.toUpperCase()}` : 
+                       event.event_type === 'stranger' ? 'Stranger Detected' : event.person_name}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(event.timestamp).toLocaleTimeString()}</span>
+                    {event.threat_score > 0 && (
+                      <span style={{ fontSize: '0.7rem', color: 'var(--warning-yellow)', marginTop: '4px' }}>
+                        Threat Score: {event.threat_score}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <span style={{ padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 500, background: isThreat ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)', color: isThreat ? 'var(--alert-red)' : 'var(--accent-green)' }}>
+                      {isThreat ? 'Alert Triggered' : 'Cleared'}
+                    </span>
+                  </div>
                 </div>
               </div>
-            )) : (
+            )}) : (
               <div className="text-muted text-center mt-4">No recent activity</div>
             )}
           </div>

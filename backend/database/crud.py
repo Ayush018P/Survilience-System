@@ -35,6 +35,9 @@ def create_user(
     department: str,
     role: str = "employee",
     photo_path: Optional[str] = None,
+    risk_level: int = 0,
+    watchlist_reason: Optional[str] = None,
+    zone_access_level: str = "public",
 ) -> User:
     """Create a new registered user."""
     user = User(
@@ -43,6 +46,9 @@ def create_user(
         department=department,
         role=role,
         photo_path=photo_path,
+        risk_level=risk_level,
+        watchlist_reason=watchlist_reason,
+        zone_access_level=zone_access_level,
     )
     db.add(user)
     db.commit()
@@ -87,6 +93,9 @@ def update_user(
     department: Optional[str] = None,
     role: Optional[str] = None,
     photo_path: Optional[str] = None,
+    risk_level: Optional[int] = None,
+    watchlist_reason: Optional[str] = None,
+    zone_access_level: Optional[str] = None,
 ) -> Optional[User]:
     """Update user fields. Only non-None fields are updated."""
     user = get_user(db, user_id)
@@ -101,6 +110,12 @@ def update_user(
         user.role = role
     if photo_path is not None:
         user.photo_path = photo_path
+    if risk_level is not None:
+        user.risk_level = risk_level
+    if watchlist_reason is not None:
+        user.watchlist_reason = watchlist_reason
+    if zone_access_level is not None:
+        user.zone_access_level = zone_access_level
 
     db.commit()
     db.refresh(user)
@@ -282,6 +297,7 @@ def create_event(
     threat_type: str = "none",
     threat_confidence: float = 0.0,
     threat_persistence: int = 0,
+    threat_score: int = 0,
 ) -> Event:
     """Create a recognition/stranger event."""
     event = Event(
@@ -303,6 +319,7 @@ def create_event(
         threat_type=threat_type,
         threat_confidence=threat_confidence,
         threat_persistence=threat_persistence,
+        threat_score=threat_score,
     )
     db.add(event)
     db.commit()

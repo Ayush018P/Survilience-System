@@ -99,6 +99,42 @@ async def export_events_csv(
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
+@router.get("/{event_id}/report")
+async def download_incident_report(
+    event_id: int,
+    db: Session = Depends(get_db),
+    user: dict = Depends(get_current_user),
+):
+    """Generate and download a PDF Incident Report."""
+    from backend.services.reporting_service import reporting_service
+    from fastapi.responses import FileResponse
+    from fastapi import HTTPException, status
+    
+    event = crud.get_events(db, skip=0, limit=1) # Need to get by ID
+    # crud.py doesn't have get_event by id, let's just query it
+    event = db.query(crud.Event).filter(crud.Event.id == event_id).first()
+    
+    if not event:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Event {event_id} not found"
+        )
+        
+    try:
+        pdf_path = reporting_service.generate_incident_report(event)
+        filename = pdf_path.split("/")[-1] if "/" in pdf_path else pdf_path.split("\\")[-1]
+        
+        return FileResponse(
+            path=pdf_path,
+            filename=filename,
+            media_type="application/pdf"
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate report: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate incident report PDF."
+        )
 
 # =============================================================================
 # Live Events WebSocket (Pub/Sub)

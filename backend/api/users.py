@@ -40,6 +40,9 @@ def _user_to_response(user, db: Session) -> UserResponse:
         employee_id=user.employee_id,
         department=user.department,
         role=user.role,
+        risk_level=user.risk_level,
+        watchlist_reason=user.watchlist_reason,
+        zone_access_level=user.zone_access_level,
         photo_path=user.photo_path,
         embedding_count=len(embeddings),
         has_centroid=centroid is not None,
@@ -53,6 +56,9 @@ async def register_user(
     employee_id: str = Form(...),
     department: str = Form(...),
     role: str = Form(default="employee"),
+    risk_level: int = Form(default=0),
+    watchlist_reason: Optional[str] = Form(default=None),
+    zone_access_level: str = Form(default="public"),
     photos: List[UploadFile] = File(...),
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
@@ -118,6 +124,9 @@ async def register_user(
         employee_id=employee_id,
         department=department,
         role=role,
+        risk_level=risk_level,
+        watchlist_reason=watchlist_reason,
+        zone_access_level=zone_access_level,
         photo_path=photo_path,
     )
 
@@ -214,6 +223,9 @@ async def update_user(
         name=update.name,
         department=update.department,
         role=update.role,
+        risk_level=update.risk_level,
+        watchlist_reason=update.watchlist_reason,
+        zone_access_level=update.zone_access_level,
     )
     if db_user is None:
         raise HTTPException(

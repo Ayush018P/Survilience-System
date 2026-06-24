@@ -101,6 +101,20 @@ async def surveillance_ws(websocket: WebSocket, token: str = None):
             # Convert BGR to RGB for MTCNN
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             
+            # Apply Low-Light Enhancement (CLAHE) if requested
+            enhance_low_light = data.get("enhance_low_light", False)
+            if enhance_low_light:
+                # Convert to LAB color space
+                lab = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2LAB)
+                l, a, b = cv2.split(lab)
+                # Apply CLAHE to L-channel
+                clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+                cl = clahe.apply(l)
+                # Merge back
+                limg = cv2.merge((cl, a, b))
+                # Convert back to RGB
+                frame_rgb = cv2.cvtColor(limg, cv2.COLOR_LAB2RGB)
+            
             # 3. Process through AI Pipeline
             results = []
             threats = []

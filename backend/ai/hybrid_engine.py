@@ -132,6 +132,7 @@ class HybridDecisionEngine:
                 
                 # Sum spikes over time: (1, num_classes)
                 spike_counts = spk_rec.sum(dim=0)
+                total_spikes = int(spike_counts.sum().item())
                 
                 # Convert counts to realistic probabilities using Temperature Softmax
                 # Temperature softens the 100% confidence explosion of SNN spike counts
@@ -175,8 +176,8 @@ class HybridDecisionEngine:
                 final_id = cos_id
                 final_name = cos_name
             else:
-                # Disagreement: Trust Cosine more for identity, but penalize confidence
-                final_confidence = cos_score * 0.7  # Penalty
+                # Disagreement: Trust Cosine more for identity, but penalize confidence slightly
+                final_confidence = cos_score * 0.9  # Mild Penalty
                 final_id = cos_id
                 final_name = cos_name
         elif cos_id is not None:

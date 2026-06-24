@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Camera, ShieldAlert, Cpu, Activity, UserCheck } from 'lucide-react';
+import { Camera, ShieldAlert, Cpu, Activity, UserCheck, Moon } from 'lucide-react';
 import { useSurveillance } from '../context/SurveillanceContext';
 import './SurveillancePage.css';
 
@@ -11,7 +11,9 @@ const SurveillancePage = () => {
     faces, 
     threats, 
     videoRef, 
-    toggleSurveillance 
+    toggleSurveillance,
+    lowLightMode,
+    setLowLightMode
   } = useSurveillance();
 
   const videoContainerRef = useRef(null);
@@ -43,6 +45,13 @@ const SurveillancePage = () => {
               ) : (
                 <button className="btn-primary" onClick={toggleSurveillance}>Start Feed</button>
               )}
+              <button 
+                className={`btn-secondary ${lowLightMode ? 'active-night' : ''}`} 
+                onClick={() => setLowLightMode(!lowLightMode)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: lowLightMode ? '#222' : '', color: lowLightMode ? '#00f0ff' : '' }}
+              >
+                <Moon size={16} /> Night Vision
+              </button>
             </div>
           </div>
 

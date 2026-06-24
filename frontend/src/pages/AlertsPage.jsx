@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ShieldAlert, AlertTriangle, UserCheck, Clock, Search } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, UserCheck, Clock, Search, FileText } from 'lucide-react';
 import apiClient from '../api/client';
 import './AlertsPage.css';
 
@@ -7,6 +7,7 @@ const AlertsPage = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, stranger, recognized
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const fetchEvents = async () => {
     try {
@@ -73,6 +74,24 @@ const AlertsPage = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Export failed:', error);
+    }
+  };
+
+  const handleDownloadPDF = async (eventId) => {
+    try {
+      const res = await apiClient.get(`/events/${eventId}/report`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `incident_report_${eventId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
     }
   };
 
@@ -167,7 +186,7 @@ const AlertsPage = () => {
                       </div>
                     </td>
                     <td>
-                      <button className="btn-icon">
+                      <button className="btn-icon" onClick={() => setSelectedEvent(evt)}>
                         <Search size={16} />
                       </button>
                     </td>
@@ -178,6 +197,91 @@ const AlertsPage = () => {
           </div>
         )}
       </div>
+
+      {selectedEvent && (
+        <div className="modal-overlay" onClick={() => setSelectedEvent(null)}>
+          <div className="modal-content glass-panel" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Event Details</h2>
+              <button className="close-btn" onClick={() => setSelectedEvent(null)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="detail-grid">
+                <div className="detail-item">
+                  <label>Type:</label>
+                  <span>{selectedEvent.event_type.toUpperCase()}</span>
+                </div>
+                <div className="detail-item">
+                  <label>Identity:</label>
+                  <span>{selectedEvent.person_name}</span>
+                </div>
+                <div className="detail-item">
+                  <label>Time:</label>
+                  <span>{formatDate(selectedEvent.timestamp)}</span>
+                </div>
+                <div className="detail-item">
+                  <label>Confidence:</label>
+                  <span>{(selectedEvent.confidence * 100).toFixed(1)}%</span>
+                </div>
+                <div className="detail-item">
+                  <label>Threat Level:</label>
+                  <span style={{
+                    color: ['orange', 'red', 'critical'].includes(selectedEvent.threat_level) ? 'var(--alert-red)' : 
+                           selectedEvent.threat_level === 'yellow' ? 'var(--warning-yellow)' : 'var(--accent-green)'
+                  }}>
+                    {selectedEvent.threat_level.toUpperCase()}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <label>Threat Type:</label>
+                  <span>{selectedEvent.threat_type.toUpperCase()}</span>
+                </div>
+                <div className="detail-item">
+                  <label>Threat Score:</label>
+                  <span>{selectedEvent.threat_score} / 100</span>
+                </div>
+                {selectedEvent.snn_score !== null && selectedEvent.snn_score !== undefined && (
+                  <div className="detail-item">
+                    <label>SNN Score:</label>
+                    <span>{selectedEvent.snn_score.toFixed(3)}</span>
+                  </div>
+                )}
+                {selectedEvent.cosine_score !== null && selectedEvent.cosine_score !== undefined && (
+                  <div className="detail-item">
+                    <label>Cosine Score:</label>
+                    <span>{selectedEvent.cosine_score.toFixed(3)}</span>
+                  </div>
+                )}
+                {selectedEvent.hybrid_latency_ms !== null && selectedEvent.hybrid_latency_ms !== undefined && (
+                  <div className="detail-item">
+                    <label>Total Latency:</label>
+                    <span>{selectedEvent.hybrid_latency_ms.toFixed(1)} ms</span>
+                  </div>
+                )}
+              </div>
+              
+              {selectedEvent.snapshot_path && (
+                <div className="snapshot-container mt-4">
+                  <h4>Snapshot</h4>
+                  <div className="text-muted text-sm" style={{ wordBreak: 'break-all' }}>
+                    {selectedEvent.snapshot_path}
+                  </div>
+                </div>
+              )}
+              
+              <div className="modal-actions" style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button 
+                  className="btn-primary" 
+                  onClick={() => handleDownloadPDF(selectedEvent.id)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                  <FileText size={16} /> Download Incident PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

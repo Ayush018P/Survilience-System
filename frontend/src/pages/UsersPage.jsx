@@ -43,6 +43,35 @@ const UsersPage = () => {
       toast.error('Failed to delete user');
     }
   };
+  const handleUpdateRisk = async (user) => {
+    const newRisk = window.prompt(`Enter new Risk Level (0-100) for ${user.name}:`, user.risk_level || 0);
+    if (newRisk === null) return;
+    
+    const riskInt = parseInt(newRisk);
+    if (isNaN(riskInt) || riskInt < 0 || riskInt > 100) {
+      toast.error('Risk level must be a number between 0 and 100');
+      return;
+    }
+    
+    let reason = user.watchlist_reason;
+    if (riskInt >= 30) {
+      reason = window.prompt(`Enter reason for elevated risk (Watchlist):`, reason || '');
+    } else {
+      reason = null;
+    }
+    
+    try {
+      await apiClient.put(`/users/${user.id}`, {
+        risk_level: riskInt,
+        watchlist_reason: reason,
+        zone_access_level: user.zone_access_level
+      });
+      toast.success('Risk profile updated');
+      fetchUsers();
+    } catch (error) {
+      toast.error('Failed to update risk profile');
+    }
+  };
 
   return (
     <div className="users-container">
@@ -83,16 +112,27 @@ const UsersPage = () => {
                   )}
                 </div>
                 <div className="user-actions">
-                  <button className="btn-icon danger" onClick={() => handleDelete(user.id, user.name)}>
+                  <button className="btn-icon danger" onClick={() => handleDelete(user.id, user.name)} title="Delete User">
                     <Trash2 size={16} />
                   </button>
                 </div>
               </div>
               
               <div className="user-card-body">
-                <h3>{user.name}</h3>
-                <p className="emp-id">{user.employee_id}</p>
+                <h3>{user.name} {user.risk_level >= 30 && <span className="watchlist-badge">⚠️ Watchlist</span>}</h3>
+                <p className="emp-id">{user.employee_id} • Zone: {user.zone_access_level}</p>
                 <div className="badge">{user.department}</div>
+                
+                <div className="risk-section" style={{ marginTop: '1rem', cursor: 'pointer' }} onClick={() => handleUpdateRisk(user)}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#888' }}>
+                    <span>Risk Level: {user.risk_level}/100</span>
+                    <span style={{ color: '#00f0ff' }}>Edit</span>
+                  </div>
+                  <div className="risk-bar" style={{ width: '100%', height: '4px', background: '#333', marginTop: '4px', borderRadius: '2px' }}>
+                    <div style={{ width: `${user.risk_level}%`, height: '100%', background: user.risk_level >= 50 ? '#ff3366' : user.risk_level >= 20 ? '#ffaa00' : '#00f0ff', borderRadius: '2px' }}></div>
+                  </div>
+                  {user.watchlist_reason && <p style={{ fontSize: '0.75rem', color: '#ff3366', marginTop: '4px' }}>Reason: {user.watchlist_reason}</p>}
+                </div>
               </div>
               
               <div className="user-card-footer">

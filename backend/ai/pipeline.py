@@ -181,15 +181,28 @@ class AIPipeline:
             )
             
             # 5. Context Fusion
-            level, t_type, t_conf, t_pers = self.fusion_engine.evaluate(
+            # Fetch user risk metrics if known
+            risk_level = 0
+            zone_access_level = "public"
+            if decision.person_id:
+                user = crud.get_user(db, decision.person_id)
+                if user:
+                    risk_level = user.risk_level
+                    zone_access_level = user.zone_access_level
+                    
+            level, t_type, t_conf, t_pers, t_score = self.fusion_engine.evaluate(
                 is_stranger=decision.is_stranger,
                 person_name=decision.person_name,
-                threats=detected_threats
+                threats=detected_threats,
+                risk_level=risk_level,
+                zone_access_level=zone_access_level,
+                snn_stability_score=decision.stability_score
             )
             result.threat_level = level
             result.threat_type = t_type
             result.threat_confidence = t_conf
             result.threat_persistence = t_pers
+            result.threat_score = t_score
             
             results.append(result)
             
@@ -246,7 +259,8 @@ class AIPipeline:
                 threat_level=result.threat_level,
                 threat_type=result.threat_type,
                 threat_confidence=result.threat_confidence,
-                threat_persistence=result.threat_persistence
+                threat_persistence=result.threat_persistence,
+                threat_score=result.threat_score
             )
             
             # Publish to Redis Pub/Sub for live dashboard alerts

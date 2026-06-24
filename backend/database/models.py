@@ -36,6 +36,9 @@ class User(Base):
     department: str = Column(String(100), nullable=False)
     role: str = Column(String(50), nullable=False, default="employee")
     photo_path: Optional[str] = Column(String(500), nullable=True)
+    risk_level: int = Column(Integer, nullable=False, default=0)
+    watchlist_reason: Optional[str] = Column(String(255), nullable=True)
+    zone_access_level: str = Column(String(50), nullable=False, default="public")
     created_at: datetime.datetime = Column(
         DateTime, default=datetime.datetime.utcnow, nullable=False
     )
@@ -100,6 +103,7 @@ class Event(Base):
     threat_type: str = Column(String(50), nullable=False, default="none")
     threat_confidence: float = Column(Float, nullable=False, default=0.0)
     threat_persistence: int = Column(Integer, nullable=False, default=0)
+    threat_score: int = Column(Integer, nullable=False, default=0)
     timestamp: datetime.datetime = Column(
         DateTime, default=datetime.datetime.utcnow, nullable=False, index=True
     )

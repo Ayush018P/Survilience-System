@@ -39,6 +39,9 @@ class UserCreate(BaseModel):
     employee_id: str = Field(..., min_length=1, max_length=50, examples=["EMP001"])
     department: str = Field(..., min_length=1, max_length=100, examples=["Engineering"])
     role: str = Field(default="employee", max_length=50, examples=["employee"])
+    risk_level: int = Field(default=0, ge=0, le=100)
+    watchlist_reason: Optional[str] = Field(default=None, max_length=255)
+    zone_access_level: str = Field(default="public", max_length=50)
 
 
 class UserUpdate(BaseModel):
@@ -46,6 +49,9 @@ class UserUpdate(BaseModel):
     name: Optional[str] = Field(None, max_length=100)
     department: Optional[str] = Field(None, max_length=100)
     role: Optional[str] = Field(None, max_length=50)
+    risk_level: Optional[int] = Field(None, ge=0, le=100)
+    watchlist_reason: Optional[str] = Field(None, max_length=255)
+    zone_access_level: Optional[str] = Field(None, max_length=50)
 
 
 class UserResponse(BaseModel):
@@ -55,6 +61,9 @@ class UserResponse(BaseModel):
     employee_id: str
     department: str
     role: str
+    risk_level: int
+    watchlist_reason: Optional[str] = None
+    zone_access_level: str
     photo_path: Optional[str] = None
     embedding_count: int = 0
     has_centroid: bool = False
@@ -120,6 +129,7 @@ class EventResponse(BaseModel):
     threat_type: str = "none"
     threat_confidence: float = 0.0
     threat_persistence: int = 0
+    threat_score: int = 0
     timestamp: datetime.datetime
 
     class Config:
@@ -195,6 +205,7 @@ class RecognitionResult(BaseModel):
     threat_type: str = "none"
     threat_confidence: float = 0.0
     threat_persistence: int = 0
+    threat_score: int = 0
 
 
 class SurveillanceResponse(BaseModel):

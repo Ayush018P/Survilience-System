@@ -36,8 +36,8 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # === AI Pipeline Configuration ===
-    SNN_WEIGHT: float = 0.6
-    COSINE_WEIGHT: float = 0.4
+    SNN_WEIGHT: float = 0.15
+    COSINE_WEIGHT: float = 0.85
     RECOGNITION_THRESHOLD: float = 0.65
     MIN_FACE_SIZE: int = 80 # Increased from 40 to massively reduce CPU lag
     NUM_SPIKE_STEPS: int = 50
