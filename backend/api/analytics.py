@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from backend.database import crud
 from backend.database.session import get_db
-from backend.schemas.schemas import AnalyticsResponse, SystemMetrics
+from backend.schemas.schemas import AnalyticsResponse, SystemMetrics, ThreatAnalyticsResponse
 from backend.services.auth_service import get_current_user
 from backend.services.redis_service import redis_service
 
@@ -61,4 +61,25 @@ async def get_analytics(
         recognition_accuracy=accuracy,
         daily_counts=daily_counts,
         hourly_traffic=hourly_traffic,
+    )
+
+
+@router.get("/threats", response_model=ThreatAnalyticsResponse)
+async def get_threat_analytics(
+    days: int = 7,
+    db: Session = Depends(get_db),
+    user: dict = Depends(get_current_user),
+):
+    """
+    Get advanced threat intelligence metrics.
+    """
+    summary = crud.get_threat_analytics_summary(db, days=days)
+    recent = crud.get_recent_high_threats(db, limit=10)
+    
+    return ThreatAnalyticsResponse(
+        average_threat_score=summary["average_threat_score"],
+        high_threat_count_today=summary["high_threat_count_today"],
+        threats_by_type=summary["threats_by_type"],
+        threats_over_time=summary["threats_over_time"],
+        recent_high_threats=recent,
     )

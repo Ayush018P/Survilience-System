@@ -420,6 +420,82 @@ def get_hourly_traffic(db: Session) -> List[Dict]:
 
 
 # =============================================================================
+# Threat Analytics
+# =============================================================================
+
+def get_threat_analytics_summary(db: Session, days: int = 7) -> Dict:
+    """Get aggregated threat data over the last N days."""
+    start_date = datetime.datetime.utcnow() - datetime.timedelta(days=days)
+    
+    # All high-threat events
+    events = (
+        db.query(Event)
+        .filter(Event.timestamp >= start_date)
+        .filter(Event.threat_level != "green")
+        .order_by(Event.timestamp)
+        .all()
+    )
+    
+    threats_by_type = {}
+    daily_threats = {}
+    total_score = 0
+    today_count = 0
+    
+    today_start = datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    for e in events:
+        # Type aggregation
+        t_type = e.threat_type or "unknown"
+        threats_by_type[t_type] = threats_by_type.get(t_type, 0) + 1
+        
+        # Time aggregation
+        day_key = e.timestamp.strftime("%Y-%m-%d")
+        if day_key not in daily_threats:
+            daily_threats[day_key] = {"date": day_key, "count": 0, "total_score": 0}
+        daily_threats[day_key]["count"] += 1
+        daily_threats[day_key]["total_score"] += e.threat_score
+        
+        # Score average
+        total_score += e.threat_score
+        
+        # Today
+        if e.timestamp >= today_start:
+            today_count += 1
+
+    # Format output
+    formatted_types = [{"threat_type": k, "count": v} for k, v in threats_by_type.items()]
+    
+    formatted_time = []
+    for day_key, data in sorted(daily_threats.items()):
+        avg_score = data["total_score"] / data["count"] if data["count"] > 0 else 0
+        formatted_time.append({
+            "date": day_key,
+            "count": data["count"],
+            "avg_score": round(avg_score, 2)
+        })
+        
+    avg_total_score = total_score / len(events) if events else 0.0
+
+    return {
+        "average_threat_score": round(avg_total_score, 2),
+        "high_threat_count_today": today_count,
+        "threats_by_type": formatted_types,
+        "threats_over_time": formatted_time
+    }
+
+
+def get_recent_high_threats(db: Session, limit: int = 10) -> List[Event]:
+    """Get recent events with the highest threat scores."""
+    return (
+        db.query(Event)
+        .filter(Event.threat_level != "green")
+        .order_by(desc(Event.timestamp))
+        .limit(limit)
+        .all()
+    )
+
+
+# =============================================================================
 # Model Records CRUD
 # =============================================================================
 

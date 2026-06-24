@@ -218,10 +218,10 @@ class AIPipeline:
         # Check if we should log (don't log the same person 30 times a second)
         # In a real system we'd use Redis to debounce events (e.g. only log once every 5 seconds per person)
         
-        # Save snapshot if stranger
+        # Save snapshot if stranger or if there's a threat (even if recognized)
         snapshot_path = None
-        if result.is_stranger:
-            filename = f"stranger_{uuid.uuid4().hex[:8]}.jpg"
+        if result.is_stranger or result.threat_level not in ['green']:
+            filename = f"event_{uuid.uuid4().hex[:8]}.jpg"
             snapshot_path = os.path.join(settings.SNAPSHOT_DIR, filename)
             
             # Crop the face for the snapshot (with some padding)

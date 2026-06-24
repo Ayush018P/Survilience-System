@@ -14,6 +14,7 @@ import UsersPage from './pages/UsersPage';
 import SurveillancePage from './pages/SurveillancePage';
 import AlertsPage from './pages/AlertsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import ThreatInsightsPage from './pages/ThreatInsightsPage';
 import ModelManagementPage from './pages/ModelManagementPage';
 import SettingsPage from './pages/SettingsPage';
 
@@ -49,6 +50,7 @@ function AppRoutes() {
         <Route path="users" element={<UsersPage />} />
         <Route path="users/register" element={<RegisterUserPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
+        <Route path="threats" element={<ThreatInsightsPage />} />
         <Route path="models" element={<ModelManagementPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>

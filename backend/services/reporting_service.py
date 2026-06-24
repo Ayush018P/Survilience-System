@@ -85,14 +85,18 @@ class ReportingService:
 
         # Visual Evidence (Snapshot)
         story.append(Paragraph("Visual Evidence (Snapshot)", self.heading2))
-        if event.snapshot_path and os.path.exists(event.snapshot_path):
-            img = RLImage(event.snapshot_path)
-            # Resize image to fit nicely
-            img.drawHeight = 3 * inch
-            img.drawWidth = 4 * inch
-            story.append(img)
+        if event.snapshot_path:
+            abs_path = os.path.abspath(event.snapshot_path)
+            if os.path.exists(abs_path):
+                img = RLImage(abs_path)
+                # Resize image to fit nicely
+                img.drawHeight = 3 * inch
+                img.drawWidth = 4 * inch
+                story.append(img)
+            else:
+                story.append(Paragraph(f"Snapshot file missing at: {event.snapshot_path}", self.normal_style))
         else:
-            story.append(Paragraph("No snapshot available for this event.", self.normal_style))
+            story.append(Paragraph("No snapshot available for this event (No threat or stranger detected at the time).", self.normal_style))
             
         story.append(Spacer(1, 0.5 * inch))
         story.append(Paragraph("Generated automatically by NeuroGuard AI Security Intelligence Platform.", self.styles['Italic']))

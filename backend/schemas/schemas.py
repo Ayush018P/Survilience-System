@@ -167,6 +167,37 @@ class AnalyticsResponse(BaseModel):
     hourly_traffic: List[Dict] = []
 
 
+class ThreatSummary(BaseModel):
+    """Aggregation of threats by type."""
+    threat_type: str
+    count: int
+
+
+class RecentThreatEvent(BaseModel):
+    """High-risk threat event details."""
+    id: int
+    event_type: str
+    person_name: Optional[str] = None
+    threat_level: str
+    threat_type: str
+    threat_score: int
+    threat_confidence: float
+    timestamp: datetime.datetime
+    snapshot_path: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ThreatAnalyticsResponse(BaseModel):
+    """Advanced threat analytics dashboard data."""
+    average_threat_score: float = 0.0
+    high_threat_count_today: int = 0
+    threats_by_type: List[ThreatSummary] = []
+    threats_over_time: List[Dict] = []  # {date: str, avg_score: float, count: int}
+    recent_high_threats: List[RecentThreatEvent] = []
+
+
 # =============================================================================
 # Surveillance (WebSocket Messages)
 # =============================================================================
