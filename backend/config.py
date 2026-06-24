@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     NUM_SPIKE_STEPS: int = 50
     FACE_IMAGE_SIZE: int = 160
     FACE_MARGIN: int = 20
+    GROQ_API_KEY: str = ""
 
     # === Paths ===
     SNAPSHOT_DIR: str = "./snapshots"
@@ -79,6 +80,7 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
+        extra = "ignore"
 
 
 # Global settings instance

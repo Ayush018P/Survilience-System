@@ -10,7 +10,8 @@ import {
   Database, 
   Settings,
   LogOut,
-  ShieldAlert
+  ShieldAlert,
+  Bot
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './Layout.css';
@@ -32,6 +33,7 @@ const Sidebar = () => {
     { name: 'Register User', path: '/users/register', icon: <UserPlus size={20} /> },
     { name: 'Analytics', path: '/analytics', icon: <BarChart2 size={20} /> },
     { name: 'Threat Insights', path: '/threats', icon: <ShieldAlert size={20} /> },
+    { name: 'AI Assistant', path: '/assistant', icon: <Bot size={20} /> },
     { name: 'Models', path: '/models', icon: <Database size={20} /> },
     { name: 'Settings', path: '/settings', icon: <Settings size={20} /> },
   ];
