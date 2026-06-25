@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Camera, ShieldAlert, Cpu, Activity, UserCheck, Moon } from 'lucide-react';
 import { useSurveillance } from '../context/SurveillanceContext';
 import './SurveillancePage.css';
@@ -16,6 +16,7 @@ const SurveillancePage = () => {
     setLowLightMode
   } = useSurveillance();
 
+  const [isMirrored, setIsMirrored] = useState(true);
   const videoContainerRef = useRef(null);
 
   // When streaming is on, attach the global video element to our local container
@@ -52,6 +53,13 @@ const SurveillancePage = () => {
               >
                 <Moon size={16} /> Night Vision
               </button>
+              <button 
+                className={`btn-secondary ${isMirrored ? 'active' : ''}`} 
+                onClick={() => setIsMirrored(!isMirrored)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: isMirrored ? 'rgba(59, 130, 246, 0.2)' : '', color: isMirrored ? '#60a5fa' : '' }}
+              >
+                Mirror
+              </button>
             </div>
           </div>
 
@@ -67,7 +75,7 @@ const SurveillancePage = () => {
                 <p>Camera offline. Click 'Start Feed' to connect.</p>
               </div>
             ) : (
-              <div className="video-container">
+              <div className="video-container" style={{ transform: isMirrored ? 'scaleX(-1)' : 'none' }}>
                 {/* The global video element gets injected here */}
                 <div ref={videoContainerRef} style={{ width: '100%', height: '100%' }}></div>
                 
@@ -98,13 +106,17 @@ const SurveillancePage = () => {
                           borderColor: ['orange', 'red', 'critical'].includes(threatLevel) ? 'var(--alert-red)' : ''
                         }}
                       >
-                        <div className="bbox-label" style={{ backgroundColor: ['orange', 'red', 'critical'].includes(threatLevel) ? 'var(--alert-red)' : '' }}>
+                        <div className="bbox-label" style={{ 
+                          backgroundColor: ['orange', 'red', 'critical'].includes(threatLevel) ? 'var(--alert-red)' : '',
+                          transform: isMirrored ? 'scaleX(-1)' : 'none'
+                        }}>
                           <span className="name">{face.person_name}</span>
                           <span className="conf">{(face.confidence * 100).toFixed(1)}%</span>
                         </div>
                         {threatLevel !== 'green' && threatLevel !== 'yellow' && (
                           <div className="threat-badge" style={{
-                            position: 'absolute', top: '-25px', right: 0, background: 'var(--alert-red)', color: 'white', padding: '2px 6px', fontSize: '10px', borderRadius: '4px', fontWeight: 'bold'
+                            position: 'absolute', top: '-25px', right: 0, background: 'var(--alert-red)', color: 'white', padding: '2px 6px', fontSize: '10px', borderRadius: '4px', fontWeight: 'bold',
+                            transform: isMirrored ? 'scaleX(-1)' : 'none'
                           }}>
                             {threatLevel.toUpperCase()} THREAT
                           </div>
@@ -136,7 +148,10 @@ const SurveillancePage = () => {
                           borderStyle: 'dashed'
                         }}
                       >
-                        <div className="bbox-label" style={{ backgroundColor: 'var(--alert-red)' }}>
+                        <div className="bbox-label" style={{ 
+                          backgroundColor: 'var(--alert-red)',
+                          transform: isMirrored ? 'scaleX(-1)' : 'none'
+                        }}>
                           <span className="name">WEAPON: {threat.label.toUpperCase()}</span>
                           <span className="conf">{(threat.confidence * 100).toFixed(1)}%</span>
                         </div>

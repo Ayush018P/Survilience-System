@@ -257,3 +257,8 @@ input, select, textarea {
   background: rgba(239, 68, 68, 0.1);
 }
 
+@media (max-width: 768px) {
+  .glass-card {
+    padding: 1rem;
+  }
+}
