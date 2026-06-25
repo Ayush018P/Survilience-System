@@ -54,7 +54,7 @@ export const SurveillanceProvider = ({ children }) => {
       setTimeout(async () => {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" }
+            video: { facingMode: "user" }
           });
           
           if (videoRef.current) {
@@ -200,12 +200,25 @@ export const SurveillanceProvider = ({ children }) => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
 
-        if (canvas.width !== video.videoWidth) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
+        let drawWidth = video.videoWidth;
+        let drawHeight = video.videoHeight;
+        
+        // Scale down to max 640 to prevent huge base64 payloads from native phone cameras
+        const MAX = 640;
+        if (drawWidth > drawHeight && drawWidth > MAX) {
+          drawHeight = Math.round(drawHeight * (MAX / drawWidth));
+          drawWidth = MAX;
+        } else if (drawHeight > drawWidth && drawHeight > MAX) {
+          drawWidth = Math.round(drawWidth * (MAX / drawHeight));
+          drawHeight = MAX;
         }
 
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        if (canvas.width !== drawWidth || canvas.height !== drawHeight) {
+          canvas.width = drawWidth;
+          canvas.height = drawHeight;
+        }
+
+        ctx.drawImage(video, 0, 0, drawWidth, drawHeight);
         const base64Image = canvas.toDataURL('image/jpeg', 0.6);
         
         isWaitingForResponse.current = true;
