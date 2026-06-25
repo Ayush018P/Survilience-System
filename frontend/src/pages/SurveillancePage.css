@@ -233,3 +233,14 @@
     height: 500px;
   }
 }
+@media (max-width: 768px) {
+  .video-card {
+    height: 350px;
+  }
+  .surveillance-container {
+    gap: 1rem;
+  }
+  .side-panel {
+    gap: 1rem;
+  }
+}
