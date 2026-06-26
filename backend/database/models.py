@@ -99,6 +99,7 @@ class Event(Base):
     is_identity_switch: Optional[bool] = Column(Integer, nullable=True)
     stability_score: Optional[float] = Column(Float, nullable=True)
     snapshot_path: Optional[str] = Column(String(500), nullable=True)
+    video_path: Optional[str] = Column(String(500), nullable=True)
     threat_level: str = Column(String(20), nullable=False, default="green")
     threat_type: str = Column(String(50), nullable=False, default="none")
     threat_confidence: float = Column(Float, nullable=False, default=0.0)

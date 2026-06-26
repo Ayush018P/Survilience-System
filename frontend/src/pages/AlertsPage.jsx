@@ -260,14 +260,27 @@ const AlertsPage = () => {
                 )}
               </div>
               
-              {selectedEvent.snapshot_path && (
+              {selectedEvent.video_path ? (
+                <div className="snapshot-container mt-4">
+                  <h4>Incident Replay (DVR)</h4>
+                  <video 
+                    controls 
+                    autoPlay 
+                    src={import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/events/${selectedEvent.id}/video` : `/api/events/${selectedEvent.id}/video`}
+                    style={{ width: '100%', borderRadius: '8px', marginTop: '1rem', border: '1px solid var(--glass-border)' }}
+                  />
+                  <div className="text-muted text-sm mt-2" style={{ wordBreak: 'break-all' }}>
+                    {selectedEvent.video_path}
+                  </div>
+                </div>
+              ) : selectedEvent.snapshot_path ? (
                 <div className="snapshot-container mt-4">
                   <h4>Snapshot</h4>
                   <div className="text-muted text-sm" style={{ wordBreak: 'break-all' }}>
                     {selectedEvent.snapshot_path}
                   </div>
                 </div>
-              )}
+              ) : null}
               
               <div className="modal-actions" style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                 <button 

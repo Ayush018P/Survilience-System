@@ -214,7 +214,8 @@ class AIPipeline:
             results.append(result)
             
             # 6. Log Events asynchronously
-            await self._log_event(frame_rgb, result, face.bbox, db)
+            event_id = await self._log_event(frame_rgb, result, face.bbox, db)
+            result.event_id = event_id
             
         return results, threats_response
         
@@ -281,10 +282,13 @@ class AIPipeline:
                 
                 await redis_service.publish_event(event_dict)
                 
+            return event_record.id
+                
         except Exception as e:
             import traceback
             traceback.print_exc()
             logger.error(f"Failed to log event: {e}")
+            return None
 
 
 # Singleton getter

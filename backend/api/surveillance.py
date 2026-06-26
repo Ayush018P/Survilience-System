@@ -56,7 +56,17 @@ async def surveillance_ws(websocket: WebSocket, token: str = None):
     
     try:
         user = await _verify_ws_token(token)
-        active_connections[websocket] = user
+        from collections import deque
+        conn_state = {
+            "user": user,
+            "frame_buffer": deque(maxlen=50),
+            "is_recording": False,
+            "recording_event_id": None,
+            "recording_frames": [],
+            "post_frames_collected": 0,
+            "target_post_frames": 50
+        }
+        active_connections[websocket] = conn_state
         logger.info(f"Surveillance WebSocket connected: {user['sub']}")
     except Exception as e:
         logger.warning(f"WebSocket auth failed: {e}")
@@ -126,6 +136,44 @@ async def surveillance_ws(websocket: WebSocket, token: str = None):
                     pipeline_results, pipeline_threats = await pipeline.process_frame_async(frame_rgb, db)
                     results = [res.model_dump() for res in pipeline_results]
                     threats = [t.model_dump() for t in pipeline_threats]
+                    
+                    # DVR Logic
+                    from backend.services.dvr_service import dvr_service
+                    
+                    # Buffer the raw frame (max 50 frames kept automatically)
+                    conn_state["frame_buffer"].append(frame_rgb)
+                    
+                    # Check if any threat was detected
+                    has_threat = any(r.threat_level != 'green' for r in pipeline_results)
+                    
+                    if has_threat and not conn_state["is_recording"]:
+                        # Start recording session
+                        # Find the event_id that triggered it
+                        threat_events = [r.event_id for r in pipeline_results if r.threat_level != 'green' and r.event_id]
+                        if threat_events:
+                            conn_state["is_recording"] = True
+                            conn_state["recording_event_id"] = threat_events[0]
+                            # Copy the pre-incident buffer
+                            conn_state["recording_frames"] = list(conn_state["frame_buffer"])
+                            conn_state["post_frames_collected"] = 0
+                            logger.info(f"DVR triggered for event {threat_events[0]}. Collecting post-frames.")
+                    
+                    elif conn_state["is_recording"]:
+                        # Continue collecting post-incident frames
+                        conn_state["recording_frames"].append(frame_rgb)
+                        conn_state["post_frames_collected"] += 1
+                        
+                        if conn_state["post_frames_collected"] >= conn_state["target_post_frames"]:
+                            # Finish recording and spawn background compiler
+                            asyncio.create_task(
+                                dvr_service.compile_and_save_dvr(
+                                    conn_state["recording_event_id"], 
+                                    conn_state["recording_frames"]
+                                )
+                            )
+                            conn_state["is_recording"] = False
+                            conn_state["recording_frames"] = []
+                            
             else:
                 # Mock response for testing UI before AI is ready
                 await asyncio.sleep(0.05)  # Simulate processing
@@ -140,6 +188,7 @@ async def surveillance_ws(websocket: WebSocket, token: str = None):
                 "processing_time_ms": round(process_time, 2),
                 "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
             }
+
             
             await websocket.send_json(response)
             

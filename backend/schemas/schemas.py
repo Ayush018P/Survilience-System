@@ -125,6 +125,7 @@ class EventResponse(BaseModel):
     is_identity_switch: Optional[bool] = None
     stability_score: Optional[float] = None
     snapshot_path: Optional[str] = None
+    video_path: Optional[str] = None
     threat_level: str = "green"
     threat_type: str = "none"
     threat_confidence: float = 0.0
@@ -218,6 +219,7 @@ class ThreatBox(BaseModel):
 
 class RecognitionResult(BaseModel):
     """Single face recognition result."""
+    event_id: Optional[int] = None
     person_id: Optional[int] = None
     person_name: str = "Unknown"
     confidence: float = 0.0

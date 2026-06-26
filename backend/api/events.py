@@ -136,6 +136,29 @@ async def download_incident_report(
             detail="Failed to generate incident report PDF."
         )
 
+@router.get("/{event_id}/video")
+async def stream_incident_video(
+    event_id: int,
+    db: Session = Depends(get_db)
+):
+    """Serve the DVR MP4 video for an incident."""
+    import os
+    from fastapi.responses import FileResponse
+    from fastapi import HTTPException, status
+    
+    event = db.query(crud.Event).filter(crud.Event.id == event_id).first()
+    
+    if not event or not event.video_path or not os.path.exists(event.video_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Video not found for this event"
+        )
+        
+    return FileResponse(
+        path=event.video_path,
+        media_type="video/mp4"
+    )
+
 # =============================================================================
 # Live Events WebSocket (Pub/Sub)
 # =============================================================================
