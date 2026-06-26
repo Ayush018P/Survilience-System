@@ -88,32 +88,31 @@ async def surveillance_ws(websocket: WebSocket, token: str = None):
             if "," in base64_img:
                 base64_img = base64_img.split(",")[1]
                 
-            # 2. Decode base64 to numpy array
+            # 2. Decode base64 to numpy array (in thread to avoid blocking)
             start_time = time.time()
             img_bytes = base64.b64decode(base64_img)
-            nparr = np.frombuffer(img_bytes, np.uint8)
-            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            enhance_low_light = data.get("enhance_low_light", False)
             
-            if frame is None:
+            def _decode_and_enhance(img_bytes_local, enhance):
+                nparr = np.frombuffer(img_bytes_local, np.uint8)
+                frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                if frame is None:
+                    return None
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                if enhance:
+                    lab = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2LAB)
+                    l, a, b = cv2.split(lab)
+                    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+                    cl = clahe.apply(l)
+                    limg = cv2.merge((cl, a, b))
+                    frame_rgb = cv2.cvtColor(limg, cv2.COLOR_LAB2RGB)
+                return frame_rgb
+                
+            frame_rgb = await asyncio.to_thread(_decode_and_enhance, img_bytes, enhance_low_light)
+            
+            if frame_rgb is None:
                 await websocket.send_json({"error": "Invalid frame data", "frame_id": frame_id})
                 continue
-                
-            # Convert BGR to RGB for MTCNN
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            
-            # Apply Low-Light Enhancement (CLAHE) if requested
-            enhance_low_light = data.get("enhance_low_light", False)
-            if enhance_low_light:
-                # Convert to LAB color space
-                lab = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2LAB)
-                l, a, b = cv2.split(lab)
-                # Apply CLAHE to L-channel
-                clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
-                cl = clahe.apply(l)
-                # Merge back
-                limg = cv2.merge((cl, a, b))
-                # Convert back to RGB
-                frame_rgb = cv2.cvtColor(limg, cv2.COLOR_LAB2RGB)
             
             # 3. Process through AI Pipeline
             results = []

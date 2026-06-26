@@ -134,31 +134,38 @@ class AIPipeline:
             
         hybrid_start_time = time.perf_counter()
         
-        # 4. Threat Detection (Run globally on frame)
-        detected_threats = self.threat_pipeline.detect(frame_rgb)
+        # 1 & 2. Get centroids first (Async DB/Redis call)
+        centroids = await self._get_centroids(db)
+        
+        # 3. CPU-Heavy AI Processing in separate thread to prevent blocking FastAPI event loop
+        def _run_ai_pipeline(img):
+            threats_det = self.threat_pipeline.detect(img)
+            faces_det = self.detector.detect_and_crop(img)
+            
+            ai_res = []
+            for face in faces_det:
+                cnn_start_time = time.perf_counter()
+                embedding = self.embedder.extract(face.tensor)
+                cnn_latency_ms = (time.perf_counter() - cnn_start_time) * 1000.0
+                
+                snn_start_time = time.perf_counter()
+                decision = self.engine.decide(embedding, centroids)
+                snn_latency_ms = (time.perf_counter() - snn_start_time) * 1000.0
+                
+                ai_res.append((face, decision, cnn_latency_ms, snn_latency_ms))
+            
+            return threats_det, faces_det, ai_res
+            
+        detected_threats, detected_faces, ai_results = await asyncio.to_thread(_run_ai_pipeline, frame_rgb)
+        
         for t in detected_threats:
             threats_response.append(ThreatBox(label=t.label, confidence=t.confidence, bbox=BoundingBox(x1=t.bbox[0], y1=t.bbox[1], x2=t.bbox[2], y2=t.bbox[3])))
             
-        # 1. Detect
-        detected_faces = self.detector.detect_and_crop(frame_rgb)
         if not detected_faces:
-            # Even if no faces, we should return if there are threats? Wait, MVP: return faces + threats.
             return results, threats_response
             
-        # 2. Get centroids
-        centroids = await self._get_centroids(db)
-        
-        for face in detected_faces:
-            # 3. Extract Embedding
-            cnn_start_time = time.perf_counter()
-            embedding = self.embedder.extract(face.tensor)
-            cnn_latency_ms = (time.perf_counter() - cnn_start_time) * 1000.0
+        for face, decision, cnn_latency_ms, snn_latency_ms in ai_results:
             cnn_macs = 2800000000  # Estimate for InceptionResnetV1
-            
-            # 4. Decide
-            snn_start_time = time.perf_counter()
-            decision: DecisionResult = self.engine.decide(embedding, centroids)
-            snn_latency_ms = (time.perf_counter() - snn_start_time) * 1000.0
             
             hybrid_latency_ms = (time.perf_counter() - hybrid_start_time) * 1000.0
             
