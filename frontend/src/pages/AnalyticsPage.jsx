@@ -72,7 +72,7 @@ const AnalyticsPage = () => {
     snnLatency: e.snn_latency_ms || 0,
     hybridLatency: e.hybrid_latency_ms || 0,
     stability: e.stability_score || 0,
-    confidence: e.confidence || 0,
+    confidence: (e.confidence || 0) * 100,
     cnnMACs: e.cnn_macs || 0,
     snnSpikes: e.snn_spikes_ac || 0,
     isSwitch: e.is_identity_switch ? 1 : 0,
@@ -107,45 +107,54 @@ const AnalyticsPage = () => {
           </h3>
           <div style={{ flex: 1, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={liveEvents}>
+              <AreaChart data={liveEvents}>
+                <defs>
+                  <linearGradient id="colorCnn" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--accent-red)" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="var(--accent-red)" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorSnn" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--accent-green)" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="var(--accent-green)" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--glass-border)" vertical={false} />
                 <XAxis dataKey="time" stroke="var(--text-muted)" fontSize={12} />
                 <YAxis stroke="var(--text-muted)" fontSize={12} unit=" ms" />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--glass-border)', color: '#fff' }}
+                  contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--glass-border)', color: '#fff', borderRadius: '8px' }}
                   itemStyle={{ color: 'var(--text-primary)' }}
                 />
                 <Legend />
-                <Line type="monotone" dataKey="cnnLatency" name="CNN Latency" stroke="var(--accent-red)" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="snnLatency" name="SNN Latency" stroke="var(--accent-green)" strokeWidth={3} dot={false} />
-              </LineChart>
+                <Area type="monotone" dataKey="cnnLatency" name="CNN Latency" stroke="var(--accent-red)" strokeWidth={2} fillOpacity={1} fill="url(#colorCnn)" dot={{ r: 3, strokeWidth: 0 }} activeDot={{ r: 6, stroke: 'var(--bg-card)', strokeWidth: 2 }} />
+                <Area type="monotone" dataKey="snnLatency" name="SNN Latency" stroke="var(--accent-green)" strokeWidth={2} fillOpacity={1} fill="url(#colorSnn)" dot={{ r: 3, strokeWidth: 0 }} activeDot={{ r: 6, stroke: 'var(--bg-card)', strokeWidth: 2 }} />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Temporal Stability */}
+        {/* Recognition Confidence History */}
         <div className="glass-card" style={{ height: '350px', display: 'flex', flexDirection: 'column' }}>
           <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Shield size={18} className="text-accent" /> Temporal Stability Score
+            <Activity size={18} className="text-accent" /> Recognition Confidence History
           </h3>
           <div style={{ flex: 1, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={liveEvents}>
                 <defs>
-                  <linearGradient id="colorStability" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorConfidence" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--accent-blue)" stopOpacity={0.8}/>
                     <stop offset="95%" stopColor="var(--accent-blue)" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--glass-border)" vertical={false} />
                 <XAxis dataKey="time" stroke="var(--text-muted)" fontSize={12} />
-                <YAxis stroke="var(--text-muted)" fontSize={12} domain={[0, 1]} />
+                <YAxis stroke="var(--text-muted)" fontSize={12} domain={[0, 100]} unit="%" />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--glass-border)' }}
+                  contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--glass-border)', color: '#fff', borderRadius: '8px' }}
                 />
                 <Legend />
-                <Area type="monotone" dataKey="stability" name="Stability Score" stroke="var(--accent-blue)" fillOpacity={1} fill="url(#colorStability)" />
-                <Line type="step" dataKey="isSwitch" name="Identity Switch Event" stroke="var(--accent-red)" strokeWidth={2} />
+                <Area type="monotone" dataKey="confidence" name="AI Confidence (%)" stroke="var(--accent-blue)" strokeWidth={2} fillOpacity={1} fill="url(#colorConfidence)" dot={{ r: 3, strokeWidth: 0 }} activeDot={{ r: 6, stroke: 'var(--bg-card)', strokeWidth: 2 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -158,18 +167,28 @@ const AnalyticsPage = () => {
           </h3>
           <div style={{ flex: 1, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={liveEvents}>
+              <AreaChart data={liveEvents}>
+                <defs>
+                  <linearGradient id="colorThreat" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--alert-red)" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="var(--alert-red)" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorPers" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--warning-yellow)" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="var(--warning-yellow)" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--glass-border)" vertical={false} />
                 <XAxis dataKey="time" stroke="var(--text-muted)" fontSize={12} />
                 <YAxis yAxisId="left" stroke="var(--text-muted)" fontSize={12} domain={[0, 100]} unit="%" />
                 <YAxis yAxisId="right" orientation="right" stroke="var(--text-muted)" fontSize={12} domain={[0, 10]} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--glass-border)', color: '#fff' }}
+                  contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--glass-border)', color: '#fff', borderRadius: '8px' }}
                 />
                 <Legend />
-                <Line yAxisId="left" type="monotone" dataKey="threatConf" name="Threat Confidence (%)" stroke="var(--alert-red)" strokeWidth={2} dot={false} />
-                <Line yAxisId="right" type="step" dataKey="threatPers" name="Persistence Frames" stroke="var(--warning-yellow)" strokeWidth={2} />
-              </LineChart>
+                <Area yAxisId="left" type="monotone" dataKey="threatConf" name="Threat Confidence (%)" stroke="var(--alert-red)" strokeWidth={2} fillOpacity={1} fill="url(#colorThreat)" dot={{ r: 3, strokeWidth: 0 }} activeDot={{ r: 6, stroke: 'var(--bg-card)', strokeWidth: 2 }} />
+                <Area yAxisId="right" type="step" dataKey="threatPers" name="Persistence Frames" stroke="var(--warning-yellow)" strokeWidth={2} fillOpacity={1} fill="url(#colorPers)" dot={{ r: 3, strokeWidth: 0 }} activeDot={{ r: 6, stroke: 'var(--bg-card)', strokeWidth: 2 }} />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>

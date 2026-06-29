@@ -35,14 +35,11 @@ async def get_analytics(
     # 2. Database aggregates
     total_users = crud.count_users(db)
     
-    # Events today
-    today_recognized = crud.count_events_by_type(db, "recognized", start_date=None) # We need to update count query
-    # Simple hack: just fetch today's events and count
-    today_events = crud.get_today_events(db)
-    recognized = sum(1 for e in today_events if e.event_type == "recognized")
-    strangers = sum(1 for e in today_events if e.event_type == "stranger")
+    # All-time events
+    recognized = crud.count_events_by_type(db, "recognized")
+    strangers = crud.count_events_by_type(db, "stranger")
     
-    total_events_today = recognized + strangers
+    total_events = recognized + strangers
     
     # 3. Accuracy Calculation (from latest active model)
     active_model = crud.get_active_model(db)
@@ -55,9 +52,9 @@ async def get_analytics(
     return AnalyticsResponse(
         system_metrics=sys_metrics,
         total_users=total_users,
-        total_events=total_events_today,
-        today_recognized=recognized,
-        today_strangers=strangers,
+        total_events=total_events,
+        total_recognized=recognized,
+        total_strangers=strangers,
         recognition_accuracy=accuracy,
         daily_counts=daily_counts,
         hourly_traffic=hourly_traffic,

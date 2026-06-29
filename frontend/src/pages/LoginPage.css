@@ -1,3 +1,5 @@
+/* Login Component Styles - Fluid Aurora Theme */
+
 .login-container {
   min-height: 100vh;
   display: flex;
@@ -8,12 +10,17 @@
 
 .login-card {
   width: 100%;
-  max-width: 400px;
-  padding: 2.5rem 2rem;
+  max-width: 420px;
+  padding: 3rem 2.5rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  background: rgba(10, 10, 26, 0.7);
+  gap: 2.5rem;
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 .login-header {
@@ -25,18 +32,23 @@
 }
 
 .logo-icon-large {
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
-  border-radius: 16px;
-  box-shadow: var(--glow-blue);
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
   margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .login-header h2 {
-  font-size: 1.75rem;
+  font-size: 1.85rem;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 .login-header h2 span {
@@ -45,7 +57,9 @@
 
 .login-header p {
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin: 0;
 }
 
 .login-form {
@@ -60,27 +74,39 @@
 
 .input-icon {
   position: absolute;
-  left: 1rem;
+  left: 1.25rem;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
+  transition: color 0.3s ease;
 }
 
 .glass-input.with-icon {
-  padding-left: 3rem;
+  padding-left: 3.25rem;
+  padding-right: 1.25rem;
+  height: 3rem;
+  border-radius: 12px;
+}
+
+.glass-input.with-icon:focus + .input-icon {
+  color: var(--accent-blue);
 }
 
 .login-btn {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   padding: 0.875rem;
   font-size: 1rem;
+  height: 3rem;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .login-footer {
   text-align: center;
   color: var(--text-muted);
-  font-size: 0.8rem;
-  margin-top: 1rem;
-  border-top: 1px solid var(--glass-border);
-  padding-top: 1rem;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 1.5rem;
 }

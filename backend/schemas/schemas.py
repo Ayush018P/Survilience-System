@@ -161,8 +161,8 @@ class AnalyticsResponse(BaseModel):
     system_metrics: SystemMetrics
     total_users: int = 0
     total_events: int = 0
-    today_recognized: int = 0
-    today_strangers: int = 0
+    total_recognized: int = 0
+    total_strangers: int = 0
     recognition_accuracy: float = 0.0
     daily_counts: List[Dict] = []
     hourly_traffic: List[Dict] = []

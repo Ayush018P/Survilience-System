@@ -47,8 +47,8 @@ const DashboardPage = () => {
   const {
     system_metrics = { fps: 0, latency_ms: 0, cpu_percent: 0, memory_percent: 0 },
     total_users = 0,
-    today_recognized = 0,
-    today_strangers = 0,
+    total_recognized = 0,
+    total_strangers = 0,
     recognition_accuracy = 0,
     hourly_traffic = [],
   } = analytics || {};
@@ -70,24 +70,24 @@ const DashboardPage = () => {
 
         <div className="stat-card glass-card">
           <div className="stat-header">
-            <h3>Recognized Today</h3>
+            <h3>Total Recognized</h3>
             <div className="stat-icon bg-green"><Activity size={20} /></div>
           </div>
-          <div className="stat-value">{today_recognized}</div>
+          <div className="stat-value">{total_recognized}</div>
           <div className="stat-footer">
             <span className="text-green">Active</span>
-            <span className="text-muted"> recognitions today</span>
+            <span className="text-muted"> all-time recognitions</span>
           </div>
         </div>
 
         <div className="stat-card glass-card">
           <div className="stat-header">
-            <h3>Stranger Alerts</h3>
+            <h3>Total Stranger Alerts</h3>
             <div className="stat-icon bg-red"><ShieldAlert size={20} /></div>
           </div>
-          <div className="stat-value text-red">{today_strangers}</div>
+          <div className="stat-value text-red">{total_strangers}</div>
           <div className="stat-footer">
-            <span className="text-muted">Unrecognized faces</span>
+            <span className="text-muted">All-time unverified faces</span>
           </div>
         </div>
 
