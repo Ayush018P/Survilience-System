@@ -30,7 +30,7 @@ services:
       - key: ADMIN_PASSWORD
         value: admin
       - key: NEUROGUARD_DB_URL
-        value: sqlite:////data/neuroguard.db
+        value: postgresql://postgres:EEC8dsgY54g4vnif@db.yrrazxpzozlbbsgiwwqf.supabase.co:5432/postgres
       # Add the frontend URL once deployed to CORS
       - key: CORS_ORIGINS
         value: https://neuroguard-frontend.onrender.com
