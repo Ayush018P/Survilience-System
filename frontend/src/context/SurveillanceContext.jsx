@@ -183,9 +183,18 @@ export const SurveillanceProvider = ({ children }) => {
   // Main Streaming Loop
   useEffect(() => {
     let animationFrameId;
+    let lastFrameTime = 0;
+    const TARGET_FPS = 12; // 12 FPS is perfect for surveillance without lagging the network
+    const frameInterval = 1000 / TARGET_FPS;
 
-    const processFrame = () => {
+    const processFrame = (timestamp) => {
       if (!isStreaming || !videoRef.current || !canvasRef.current || !wsRef.current) {
+        animationFrameId = requestAnimationFrame(processFrame);
+        return;
+      }
+
+      // Throttle the frame sending rate
+      if (timestamp - lastFrameTime < frameInterval) {
         animationFrameId = requestAnimationFrame(processFrame);
         return;
       }
@@ -196,6 +205,7 @@ export const SurveillanceProvider = ({ children }) => {
       }
 
       if (wsRef.current.readyState === WebSocket.OPEN && !isWaitingForResponse.current) {
+        lastFrameTime = timestamp; // Update the last frame time
         const video = videoRef.current;
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -219,7 +229,8 @@ export const SurveillanceProvider = ({ children }) => {
         }
 
         ctx.drawImage(video, 0, 0, drawWidth, drawHeight);
-        const base64Image = canvas.toDataURL('image/jpeg', 0.6);
+        // Reduce JPEG quality slightly to further save bandwidth (0.6 -> 0.5)
+        const base64Image = canvas.toDataURL('image/jpeg', 0.5);
         
         isWaitingForResponse.current = true;
         wsRef.current.send(JSON.stringify({
