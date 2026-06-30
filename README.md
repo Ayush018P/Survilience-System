@@ -1,13 +1,5 @@
----
-title: NeuroGuard AI
-emoji: 🛡️
-colorFrom: blue
-colorTo: green
-sdk: docker
-app_port: 7860
----
-# NeuroGuard AI 🛡️
 
+# NeuroGuard AI 🛡️
 **Privacy-First Offline AI Surveillance Powered by Hybrid CNN-SNN Intelligence**
 
 NeuroGuard AI is a state-of-the-art surveillance platform designed for real-time edge processing and absolute privacy. Built to function entirely offline, it leverages a unique hybrid AI architecture combining traditional Convolutional Neural Networks (CNN) for robust feature extraction and Spiking Neural Networks (SNN) for rapid, energy-efficient classification.
