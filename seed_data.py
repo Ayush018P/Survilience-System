@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from backend.database.models import Event, User, Base
 import os
 
-db_url = os.environ.get('NEUROGUARD_DB_URL', 'postgresql://postgres.yrrazxpzozlbbsgiwwqf:CpFZIHSYonBVlezI@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres')
+db_url = os.environ.get('NEUROGUARD_DB_URL', 'postgresql://postgres:postgres@localhost:5432/postgres')
 engine = create_engine(db_url)
 SessionLocal = sessionmaker(bind=engine)
 

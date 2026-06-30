@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, text
 import os
 
-db_url = 'postgresql://postgres.yrrazxpzozlbbsgiwwqf:CpFZIHSYonBVlezI@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres'
+db_url = os.environ.get('NEUROGUARD_DB_URL', 'postgresql://postgres:postgres@localhost:5432/postgres')
 engine = create_engine(db_url)
 
 with engine.connect() as conn:
