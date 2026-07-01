@@ -110,34 +110,23 @@ class AIPipeline:
         return centroids
 
     async def process_frame_async(self, frame_rgb: np.ndarray, db: Session) -> List[RecognitionResult]:
-        """
-        Process a single frame from the webcam.
-        
-        1. Detect faces
-        2. Extract embeddings
-        3. Run hybrid decision engine
-        4. Detect Threats (YOLO)
-        5. Context Fusion (Identity + Threat)
-        6. Log events (strangers/recognition)
-        7. Return results
-        """
-        # Ensure engine is loaded
+        # Engine lazy-load. Keeps the API fast on boot but hits us on the first frame.
         if self.engine is None:
             self.load_active_model(db)
             
         results = []
         threats_response = []
         
-        # 0. Motion Detection
+        # Super cheap motion check before we wake up the heavy tensor ops
         if not self.motion_detector.detect(frame_rgb):
             return results, threats_response
             
         hybrid_start_time = time.perf_counter()
         
-        # 1 & 2. Get centroids first (Async DB/Redis call)
+        # Pull centroids - this hits Redis 99% of the time, so it's basically free
         centroids = await self._get_centroids(db)
         
-        # 3. CPU-Heavy AI Processing in separate thread to prevent blocking FastAPI event loop
+        # Pushing the actual AI math to a separate thread because YOLO + ResNet + SNN blocks the entire FastAPI loop for 200ms otherwise.
         def _run_ai_pipeline(img):
             threats_det = self.threat_pipeline.detect(img)
             faces_det = self.detector.detect_and_crop(img)
@@ -220,13 +209,13 @@ class AIPipeline:
         return results, threats_response
         
     async def _log_event(self, frame: np.ndarray, result: RecognitionResult, bbox: BoundingBox, db: Session):
-        """Save event to DB and publish to Redis."""
         event_type = "stranger" if result.is_stranger else "recognized"
         
-        # Check if we should log (don't log the same person 30 times a second)
-        # In a real system we'd use Redis to debounce events (e.g. only log once every 5 seconds per person)
+        # TODO: We are currently hammering the database if someone stands in front of the camera for 10 minutes.
+        # Need to implement a Redis debounce lock here so we only log once every ~5 seconds per person - Ayush
         
-        # Save snapshot if stranger or if there's a threat (even if recognized)
+        # We only care about saving the JPG if it's an unrecognized person or an active threat.
+        # Don't want to waste S3/disk space on regular employees checking in.
         snapshot_path = None
         if result.is_stranger or result.threat_level not in ['green']:
             filename = f"event_{uuid.uuid4().hex[:8]}.jpg"

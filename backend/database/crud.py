@@ -39,7 +39,7 @@ def create_user(
     watchlist_reason: Optional[str] = None,
     zone_access_level: str = "public",
 ) -> User:
-    """Create a new registered user."""
+    # Note: Watch the zone_access_level default here. We don't want to accidentally give 'restricted' to new hires.
     user = User(
         name=name,
         employee_id=employee_id,
@@ -58,22 +58,21 @@ def create_user(
 
 
 def get_user(db: Session, user_id: int) -> Optional[User]:
-    """Get a user by primary key."""
     return db.query(User).filter(User.id == user_id).first()
 
 
 def get_user_by_employee_id(db: Session, employee_id: str) -> Optional[User]:
-    """Get a user by their employee ID."""
     return db.query(User).filter(User.employee_id == employee_id).first()
 
 
 def get_all_users(db: Session, skip: int = 0, limit: int = 100) -> List[User]:
-    """List all registered users with pagination."""
+    # Pagination is hardcoded to offset/limit. Might get slow if we hit 1M users, but fine for now.
     return db.query(User).order_by(desc(User.created_at)).offset(skip).limit(limit).all()
 
 
 def search_users(db: Session, query: str) -> List[User]:
-    """Search users by name or employee ID."""
+    # Full table scan ILIKE. 
+    # TODO: Add a trigram index on the DB side if this endpoint gets heavily hit - Ayush
     search_pattern = f"%{query}%"
     return (
         db.query(User)
@@ -97,7 +96,7 @@ def update_user(
     watchlist_reason: Optional[str] = None,
     zone_access_level: Optional[str] = None,
 ) -> Optional[User]:
-    """Update user fields. Only non-None fields are updated."""
+    # Patch update. Only updates fields that are explicitly passed in.
     user = get_user(db, user_id)
     if user is None:
         return None
@@ -124,7 +123,7 @@ def update_user(
 
 
 def delete_user(db: Session, user_id: int) -> bool:
-    """Delete a user and all associated embeddings/events (cascading)."""
+    # Hard delete. This wipes embeddings via Postgres CASCADE so we don't end up with ghost vectors.
     user = get_user(db, user_id)
     if user is None:
         return False
@@ -137,7 +136,6 @@ def delete_user(db: Session, user_id: int) -> bool:
 
 
 def count_users(db: Session) -> int:
-    """Count total registered users."""
     return db.query(func.count(User.id)).scalar() or 0
 
 

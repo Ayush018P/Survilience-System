@@ -12,7 +12,7 @@ export const useSurveillance = () => {
 };
 
 export const SurveillanceProvider = ({ children }) => {
-  // We keep video and canvas in memory, but they can be attached to DOM later if needed
+  // We keep video and canvas in memory. Don't attach to DOM directly here, React gets weird about stream lifecycles.
   const videoRef = useRef(document.createElement('video'));
   const canvasRef = useRef(document.createElement('canvas'));
   
@@ -28,8 +28,8 @@ export const SurveillanceProvider = ({ children }) => {
   const [streamError, setStreamError] = useState(null);
   const [lowLightMode, setLowLightMode] = useState(false);
 
-  // Stop Camera
   const stopCamera = useCallback(() => {
+    // Hard stop tracks. MediaStream API sometimes leaves the green light on if we just pause.
     if (videoRef.current) {
       if (videoRef.current.srcObject) {
         const tracks = videoRef.current.srcObject.getTracks();
@@ -45,10 +45,9 @@ export const SurveillanceProvider = ({ children }) => {
     setThreats([]);
   }, []);
 
-  // Start Camera
   const startCamera = useCallback(async () => {
     try {
-      // Small delay to ensure any previous streams are completely closed
+      // Small delay to ensure previous tracks are fully dead before asking hardware for a new one
       stopCamera();
       
       setTimeout(async () => {
@@ -60,7 +59,7 @@ export const SurveillanceProvider = ({ children }) => {
           if (videoRef.current) {
             videoRef.current.src = "";
             videoRef.current.srcObject = stream;
-            // Need to autoPlay the memory video element for frames to render
+            // Hack: Safari iOS requires autoplay and muted or it completely blocks the video feed
             videoRef.current.autoplay = true;
             videoRef.current.playsInline = true;
             videoRef.current.muted = true;
@@ -84,8 +83,8 @@ export const SurveillanceProvider = ({ children }) => {
     }
   }, [stopCamera]);
 
-  // Siren Logic
   const playSiren = useCallback(() => {
+    // Browsers block AudioContext unless explicitly triggered by user interaction
     if (!audioCtxRef.current) {
       audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
     }
@@ -117,7 +116,6 @@ export const SurveillanceProvider = ({ children }) => {
     }
   }, []);
 
-  // WebSocket
   const connectWebSocket = useCallback(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -147,7 +145,6 @@ export const SurveillanceProvider = ({ children }) => {
       setFaces(data.results || []);
       setThreats(data.threats || []);
       
-      // Siren Trigger Logic
       let shouldPlaySiren = false;
       if (data.results) {
         for (const res of data.results) {
@@ -173,6 +170,7 @@ export const SurveillanceProvider = ({ children }) => {
     ws.onclose = () => {
       console.log("Global WebSocket Disconnected");
       if (isStreaming) {
+        // Simple reconnect backoff
         setTimeout(connectWebSocket, 2000);
       }
     };
@@ -180,11 +178,11 @@ export const SurveillanceProvider = ({ children }) => {
     wsRef.current = ws;
   }, [isStreaming, playSiren, stopSiren]);
 
-  // Main Streaming Loop
   useEffect(() => {
     let animationFrameId;
     let lastFrameTime = 0;
-    const TARGET_FPS = 12; // 12 FPS is perfect for surveillance without lagging the network
+    // TODO: 12 FPS is a sweet spot for bandwidth, but maybe we make this configurable later - Ayush
+    const TARGET_FPS = 12; 
     const frameInterval = 1000 / TARGET_FPS;
 
     const processFrame = (timestamp) => {
@@ -193,7 +191,6 @@ export const SurveillanceProvider = ({ children }) => {
         return;
       }
 
-      // Throttle the frame sending rate
       if (timestamp - lastFrameTime < frameInterval) {
         animationFrameId = requestAnimationFrame(processFrame);
         return;
@@ -204,8 +201,9 @@ export const SurveillanceProvider = ({ children }) => {
         return;
       }
 
+      // Ping-pong style: don't send next frame until backend responds. Stops queue buildup.
       if (wsRef.current.readyState === WebSocket.OPEN && !isWaitingForResponse.current) {
-        lastFrameTime = timestamp; // Update the last frame time
+        lastFrameTime = timestamp;
         const video = videoRef.current;
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -213,7 +211,7 @@ export const SurveillanceProvider = ({ children }) => {
         let drawWidth = video.videoWidth;
         let drawHeight = video.videoHeight;
         
-        // Scale down to max 640 to prevent huge base64 payloads from native phone cameras
+        // Downscale to 640px to prevent 4K mobile cameras from murdering the network
         const MAX = 640;
         if (drawWidth > drawHeight && drawWidth > MAX) {
           drawHeight = Math.round(drawHeight * (MAX / drawWidth));
@@ -229,7 +227,7 @@ export const SurveillanceProvider = ({ children }) => {
         }
 
         ctx.drawImage(video, 0, 0, drawWidth, drawHeight);
-        // Reduce JPEG quality slightly to further save bandwidth (0.6 -> 0.5)
+        
         const base64Image = canvas.toDataURL('image/jpeg', 0.5);
         
         isWaitingForResponse.current = true;
