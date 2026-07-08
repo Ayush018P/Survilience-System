@@ -21,14 +21,25 @@ const SurveillancePage = () => {
 
   // When streaming is on, attach the global video element to our local container
   useEffect(() => {
-    if (isStreaming && videoContainerRef.current && videoRef.current) {
+    const container = videoContainerRef.current;
+    const video = videoRef.current;
+    
+    if (isStreaming && container && video) {
       // Avoid reparenting if it's already there
-      if (!videoContainerRef.current.contains(videoRef.current)) {
-        videoContainerRef.current.innerHTML = '';
-        videoContainerRef.current.appendChild(videoRef.current);
-        videoRef.current.className = 'live-video';
+      if (!container.contains(video)) {
+        container.innerHTML = '';
+        container.appendChild(video);
+        video.className = 'live-video';
       }
     }
+    
+    // Cleanup: When navigating away from this page, remove the video node from the DOM 
+    // so it doesn't get stuck in a detached React tree state
+    return () => {
+      if (container && video && container.contains(video)) {
+        container.removeChild(video);
+      }
+    };
   }, [isStreaming, videoRef]);
 
   return (

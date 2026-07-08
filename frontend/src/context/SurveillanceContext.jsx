@@ -15,6 +15,7 @@ export const SurveillanceProvider = ({ children }) => {
   // We keep video and canvas in memory. Don't attach to DOM directly here, React gets weird about stream lifecycles.
   const videoRef = useRef(document.createElement('video'));
   const canvasRef = useRef(document.createElement('canvas'));
+  const streamRef = useRef(null);
   
   const wsRef = useRef(null);
   const audioCtxRef = useRef(null);
@@ -30,19 +31,27 @@ export const SurveillanceProvider = ({ children }) => {
 
   const stopCamera = useCallback(() => {
     // Hard stop tracks. MediaStream API sometimes leaves the green light on if we just pause.
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
     if (videoRef.current) {
       if (videoRef.current.srcObject) {
         const tracks = videoRef.current.srcObject.getTracks();
         tracks.forEach(track => track.stop());
         videoRef.current.srcObject = null;
-      } else if (videoRef.current.src) {
-        videoRef.current.pause();
       }
+      videoRef.current.removeAttribute('src');
     }
     setIsStreaming(false);
     stopSiren();
     setFaces([]);
     setThreats([]);
+    setSystemStats({ fps: 0, latency: 0 });
+    
+    // CRITICAL: Reset the response lock, otherwise if we stopped while waiting for a WS frame, 
+    // the next session will be permanently deadlocked!
+    isWaitingForResponse.current = false; 
   }, []);
 
   const startCamera = useCallback(async () => {
@@ -55,15 +64,30 @@ export const SurveillanceProvider = ({ children }) => {
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "user" }
           });
+          streamRef.current = stream;
           
           if (videoRef.current) {
             videoRef.current.src = "";
             videoRef.current.srcObject = stream;
             // Hack: Safari iOS requires autoplay and muted or it completely blocks the video feed
+            // We MUST set these as HTML attributes, not just JS properties, for mobile Safari
+            videoRef.current.setAttribute('autoplay', '');
+            videoRef.current.setAttribute('muted', '');
+            videoRef.current.setAttribute('playsinline', '');
             videoRef.current.autoplay = true;
             videoRef.current.playsInline = true;
             videoRef.current.muted = true;
-            videoRef.current.play().catch(e => console.error(e));
+            
+            // On mobile, play() must sometimes be deferred slightly until the stream is ready
+            setTimeout(() => {
+              videoRef.current.play().catch(e => {
+                console.error("Mobile play() blocked:", e);
+                // Force play on next user interaction if blocked
+                document.body.addEventListener('touchstart', () => {
+                  videoRef.current.play().catch(console.error);
+                }, { once: true });
+              });
+            }, 50);
             
             setStreamError(null);
             setIsStreaming(true);
