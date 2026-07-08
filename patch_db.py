@@ -1,13 +1,14 @@
 from sqlalchemy import create_engine, text
 import os
 
-db_url = os.environ.get('NEUROGUARD_DB_URL', 'postgresql://postgres:postgres@localhost:5432/postgres')
+db_url = 'postgresql://postgres.yrrazxpzozlbbsgiwwqf:CpFZIHSYonBVlezI@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres'
 engine = create_engine(db_url)
 
 with engine.connect() as conn:
     try:
-        conn.execute(text('ALTER TABLE events ADD COLUMN IF NOT EXISTS video_path VARCHAR(500);'))
+        conn.execute(text('ALTER TABLE events ALTER COLUMN cnn_macs TYPE BIGINT;'))
+        conn.execute(text('ALTER TABLE events ALTER COLUMN snn_spikes_ac TYPE BIGINT;'))
         conn.commit()
-        print("Successfully added video_path column.")
+        print("Successfully altered cnn_macs and snn_spikes_ac to BIGINT.")
     except Exception as e:
-        print(f"Error adding video_path: {e}")
+        print(f"Error altering columns: {e}")

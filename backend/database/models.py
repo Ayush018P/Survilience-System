@@ -13,6 +13,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    BigInteger,
     LargeBinary,
     String,
     Text,
@@ -94,8 +95,8 @@ class Event(Base):
     cnn_latency_ms: Optional[float] = Column(Float, nullable=True)
     snn_latency_ms: Optional[float] = Column(Float, nullable=True)
     hybrid_latency_ms: Optional[float] = Column(Float, nullable=True)
-    cnn_macs: Optional[int] = Column(Integer, nullable=True)
-    snn_spikes_ac: Optional[int] = Column(Integer, nullable=True)
+    cnn_macs: Optional[int] = Column(BigInteger, nullable=True)
+    snn_spikes_ac: Optional[int] = Column(BigInteger, nullable=True)
     is_identity_switch: Optional[bool] = Column(Integer, nullable=True)
     stability_score: Optional[float] = Column(Float, nullable=True)
     snapshot_path: Optional[str] = Column(String(500), nullable=True)
